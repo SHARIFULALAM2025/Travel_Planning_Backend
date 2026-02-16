@@ -11,6 +11,8 @@ app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
+//connect mongodb
+
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_User}:${process.env.DB_Pass}@cluster0.r1svgo6.mongodb.net/?appName=Cluster0`;
 
