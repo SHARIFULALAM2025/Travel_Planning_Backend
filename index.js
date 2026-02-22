@@ -27,7 +27,57 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const database = client.db('Travel');
-        const movies = database.collection('users');
+        const AllUser = database.collection('users');
+        app.post("/All_users", async (req, res) => {
+            try {
+                const userData = req.body;
+
+                const existUser = await AllUser.findOne({ email: userData.email });
+
+                if (existUser) {
+                    return res.status(200).json({
+                        message: "User already exists",
+                        user: existUser,
+                    });
+                }
+
+                
+                const result = await AllUser.insertOne(userData);
+
+                res.status(201).json({
+                    message: "User created successfully",
+                    result,
+                });
+
+            } catch (error) {
+                console.error("Error creating user:", error);
+                res.status(500).json({ error: "Failed to create user" });
+            }
+        });
+        // app.post("/All_users", async (req, res) => {
+        //     try {
+        //         const userData = req.body;
+        //         const exitUser = await AllUser.findOne({ email: userData.email });
+        //         if (exitUser) {
+        //             return res.status(400).json({ message: "email already exist" })
+        //         }
+        //         const result = await AllUser.insertOne(userData);
+        //         res.send(result)
+        //     } catch (error) {
+        //         console.error('Error creating user:', error)
+        //         res.status(500).json({ error: 'Failed to create user' })
+        //     }
+
+        // });
+        app.post("/login-user", async (req, res) => {
+            const { email } = req.body;
+            const user = await AllUser.findOne({ email: email });
+
+            if (!user) {
+                return res.status(404).send({ message: "User not found" });
+            }
+            res.send(user);
+        });
 
 
 
