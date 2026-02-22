@@ -1,8 +1,9 @@
 const express = require('express')
 const app = express()
+require('dotenv').config()
 const port = process.env.PORT || 5000
 const cors = require('cors');
-require('dotenv').config()
+
 
 app.use(cors())
 app.use(express.json())
@@ -14,7 +15,7 @@ app.get('/', (req, res) => {
 //connect mongodb connection
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = `mongodb+srv://${process.env.DB_User}:${process.env.DB_Pass}@cluster0.r1svgo6.mongodb.net/?appName=Cluster0`;
+const uri = `mongodb+srv://TravelPlanning:MVHJOHnrJSGPwv0h@cluster0.r1svgo6.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -26,6 +27,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
+
         const database = client.db('Travel');
         const AllUser = database.collection('users');
         app.post("/All_users", async (req, res) => {
