@@ -56,21 +56,7 @@ async function run() {
                 res.status(500).json({ error: "Failed to create user" });
             }
         });
-        // app.post("/All_users", async (req, res) => {
-        //     try {
-        //         const userData = req.body;
-        //         const exitUser = await AllUser.findOne({ email: userData.email });
-        //         if (exitUser) {
-        //             return res.status(400).json({ message: "email already exist" })
-        //         }
-        //         const result = await AllUser.insertOne(userData);
-        //         res.send(result)
-        //     } catch (error) {
-        //         console.error('Error creating user:', error)
-        //         res.status(500).json({ error: 'Failed to create user' })
-        //     }
-
-        // });
+        
         app.post("/login-user", async (req, res) => {
             const { email } = req.body;
             const user = await AllUser.findOne({ email: email });
@@ -80,6 +66,68 @@ async function run() {
             }
             res.send(user);
         });
+        app.get("/reset/:email", async (req, res) => {
+            const email = req.params.email;
+            const result = await AllUser.findOne({ email: email });
+            if (!result) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            res.send(result);
+        })
+        // Add this route to your Express server
+        app.post("/store-reset-token", async (req, res) => {
+            const { email, token } = req.body;
+
+            try {
+                // Set expiration for 1 hour from now
+                const expires = new Date(Date.now() + 3600000);
+
+                const result = await AllUser.updateOne(
+                    { email: email },
+                    {
+                        $set: {
+                            resetToken: token,
+                            resetTokenExpiry: expires
+                        }
+                    }
+                );
+
+                if (result.matchedCount === 0) {
+                    return res.status(404).json({ message: "User not found" });
+                }
+
+                res.status(200).json({ message: "Token stored successfully" });
+            } catch (error) {
+                res.status(500).json({ error: "Failed to store token" });
+            }
+        });
+        //update password
+        app.post("/update-password", async(req, res) => {
+            const { token, passwordHashed } = req.body;
+            try {
+                const user = await AllUser.findOne({
+                    resetToken: token,
+                    resetTokenExpiry: { $gt: new Date() }
+                })
+                if (!user) {
+                    return res.status(400).json({
+                        message: "Token is invalid or has expired."
+                    })
+                }
+                await AllUser.updateOne(
+                    { _id: user._id },
+                    {
+                        $set: { password: passwordHashed }
+                    }
+                );
+
+                res.status(200).json({ success: true, message: "Password updated successfully" });
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ error: "Internal server error" });
+            }
+        })
 
 
 
