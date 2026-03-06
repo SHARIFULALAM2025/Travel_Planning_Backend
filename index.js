@@ -30,7 +30,7 @@ async function run() {
 
         const database = client.db('Travel');
         const AllUser = database.collection('users');
-        const LllMessage=database.collection("message")
+        const AllMessage=database.collection("message")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -131,11 +131,16 @@ async function run() {
         })
         //message save
         app.post("/message",async (req, res) => {
-            const messageData = req.body;
-            console.log(messageData);
+            try {
+                const messageData = req.body;
+                console.log(messageData);
 
-            const result = await LllMessage.insertOne(messageData)
-            res.send(result)
+                const result = await AllMessage.insertOne(messageData)
+                res.send(result)
+            } catch (error) {
+                console.error("ডাটাবেস সেভ করতে সমস্যা:", error);
+
+            }
         })
 
 
