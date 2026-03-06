@@ -30,6 +30,7 @@ async function run() {
 
         const database = client.db('Travel');
         const AllUser = database.collection('users');
+        const LllMessage=database.collection("message")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -56,7 +57,7 @@ async function run() {
                 res.status(500).json({ error: "Failed to create user" });
             }
         });
-        
+
         app.post("/login-user", async (req, res) => {
             const { email } = req.body;
             const user = await AllUser.findOne({ email: email });
@@ -127,6 +128,14 @@ async function run() {
                 console.error(error);
                 res.status(500).json({ error: "Internal server error" });
             }
+        })
+        //message save
+        app.post("/message",async (req, res) => {
+            const messageData = req.body;
+            console.log(messageData);
+
+            const result = await LllMessage.insertOne(messageData)
+            res.send(result)
         })
 
 
