@@ -30,7 +30,9 @@ async function run() {
 
         const database = client.db('Travel');
         const AllUser = database.collection('users');
-        const AllMessage=database.collection("message")
+        const AllMessage = database.collection("message");
+        const ProductInfo = database.collection("product");
+        const blogPost=database.collection("blog")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -142,7 +144,27 @@ async function run() {
 
             }
         })
+        // product data thunder client
+        app.post("/product-data", async (req, res) => {
+            const productData = req.body;
+            const result = await ProductInfo.insertOne(productData);
+            res.send(result)
 
+        })
+        app.get("/productAll", async(req, res) => {
+            const allProduct = await ProductInfo.find().toArray();
+            res.send(allProduct)
+        })
+        //
+        app.post("/blog-post", async(req, res) => {
+            const blogData = req.body;
+            const result = await blogPost.insertOne(blogData);
+            res.send(result)
+        })
+        app.get("/AllBlog", async (req, res) => {
+            const allBlog = await blogPost.find().toArray();
+            res.send(allBlog)
+        })
 
 
         await client.db("admin").command({ ping: 1 });
