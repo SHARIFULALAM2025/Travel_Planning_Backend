@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
 
 //connect mongodb connection
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://TravelPlanning:MVHJOHnrJSGPwv0h@cluster0.r1svgo6.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -32,7 +32,8 @@ async function run() {
         const AllUser = database.collection('users');
         const AllMessage = database.collection("message");
         const ProductInfo = database.collection("product");
-        const blogPost=database.collection("blog")
+        const blogPost = database.collection("blog");
+        const reviewInfo=database.collection("review")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -165,6 +166,24 @@ async function run() {
             const allBlog = await blogPost.find().toArray();
             res.send(allBlog)
         })
+        app.post("/review", async (req, res) => {
+            const reviewData = req.body;
+            const result = await reviewInfo.insertOne(reviewData);
+            res.send(result)
+        });
+        app.get("/allReview/:id", async (req, res) => {
+            try {
+                const id = req.params.id; 
+
+                const query = { productId: id };
+
+                const reviewAll = await reviewInfo.find(query).toArray();
+
+                res.send(reviewAll);
+            } catch (error) {
+                res.status(500).send({ message: "Error fetching reviews", error });
+            }
+        });
 
 
         await client.db("admin").command({ ping: 1 });
