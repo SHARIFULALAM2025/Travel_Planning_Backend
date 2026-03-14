@@ -33,7 +33,8 @@ async function run() {
         const AllMessage = database.collection("message");
         const ProductInfo = database.collection("product");
         const blogPost = database.collection("blog");
-        const reviewInfo=database.collection("review")
+        const reviewInfo = database.collection("review");
+        const allCardData=database.collection("card")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -173,7 +174,7 @@ async function run() {
         });
         app.get("/allReview/:id", async (req, res) => {
             try {
-                const id = req.params.id; 
+                const id = req.params.id;
 
                 const query = { productId: id };
 
@@ -184,6 +185,16 @@ async function run() {
                 res.status(500).send({ message: "Error fetching reviews", error });
             }
         });
+        // cart
+        app.post("/cart-data", async(req, res) => {
+            const allCardInfo = req.body;
+            const result = await allCardData.insertOne(allCardInfo);
+            res.send(result)
+        })
+        app.get("/allCard", async(req, res) => {
+            const allCard = await allCardData.find().toArray();
+            res.send(allCard)
+        })
 
 
         await client.db("admin").command({ ping: 1 });
