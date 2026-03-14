@@ -191,9 +191,18 @@ async function run() {
             const result = await allCardData.insertOne(allCardInfo);
             res.send(result)
         })
-        app.get("/allCard", async(req, res) => {
-            const allCard = await allCardData.find().toArray();
+        app.get("/allCard/:email", async (req, res) => {
+            const email = req.params.email;
+
+            const allCard = await allCardData.find({ email: email }).toArray();
             res.send(allCard)
+        });
+        app.delete("/removeCard/:id", async(req, res) => {
+            const id = req.params.id;
+            const query={_id:new ObjectId(id)}
+            const result = await allCardData.deleteOne(query);
+            res.send(result)
+
         })
 
 
