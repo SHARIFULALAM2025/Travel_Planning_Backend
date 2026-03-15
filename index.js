@@ -34,7 +34,8 @@ async function run() {
         const ProductInfo = database.collection("product");
         const blogPost = database.collection("blog");
         const reviewInfo = database.collection("review");
-        const allCardData=database.collection("card")
+        const allCardData = database.collection("card");
+        const AllWishlist = database.collection("wishlist");
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -203,6 +204,11 @@ async function run() {
             const result = await allCardData.deleteOne(query);
             res.send(result)
 
+        })
+        app.post("/wishlist",async (req, res) => {
+            const wishlistData = req.body;
+            const result = await AllWishlist.insertOne(wishlistData);
+            res.send(result)
         })
 
 
