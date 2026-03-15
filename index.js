@@ -205,9 +205,20 @@ async function run() {
             res.send(result)
 
         })
-        app.post("/wishlist",async (req, res) => {
+        app.post("/wishlist", async (req, res) => {
             const wishlistData = req.body;
             const result = await AllWishlist.insertOne(wishlistData);
+            res.send(result)
+        });
+        app.get("/allWishlist/:email", async (req, res) => {
+            const email = req.params.email;
+            const allCard = await AllWishlist.find({ email: email }).toArray();
+            res.send(allCard)
+        });
+        app.delete("/deleteWishlist/:id",async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await AllWishlist.deleteOne(query);
             res.send(result)
         })
 
