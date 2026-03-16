@@ -14,7 +14,7 @@ app.use(express.json())
 require('dotenv').config()
 const port = process.env.PORT || 5000
 
-//
+//store id
 const store_id = process.env.STORE_ID;
 const store_passwd = process.env.STORE_PASSWORD;
 const is_live = false;
