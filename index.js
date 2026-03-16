@@ -3,7 +3,13 @@ const SSLCommerzPayment = require('sslcommerz-lts');
 const { v4: uuidv4 } = require('uuid');
 const app = express()
 const cors = require('cors');
-app.use(cors())
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'https://travel-planning-ivory.vercel.app'
+    ],
+    credentials: true
+}));
 app.use(express.json())
 require('dotenv').config()
 const port = process.env.PORT || 5000
@@ -243,10 +249,10 @@ async function run() {
                 total_amount: price,
                 currency: 'BDT',
                 tran_id: transactionId,
-                success_url: `http://localhost:5000/payment/success/${transactionId}`,
-                fail_url: `http://localhost:5000/payment/fail/${transactionId}`,
-                cancel_url: 'http://localhost:5000/payment/cancel',
-                ipn_url: 'http://localhost:5000/ipn',
+                success_url: `${process.env.SERVER_Base_Url}/payment/success/${transactionId}`,
+                fail_url: `${process.env.SERVER_Base_Url}/payment/fail/${transactionId}`,
+                cancel_url: `${process.env.SERVER_Base_Url}/payment/cancel`,
+                ipn_url: `${process.env.SERVER_Base_Url}/ipn`,
                 shipping_method: 'Courier',
                 product_name: productName || 'Travel Package',
                 product_category: 'Service',
@@ -296,20 +302,19 @@ async function run() {
                     { $set: { paidStatus: true } }
                 );
 
-                // ২. আপডেট হোক বা না হোক, ইউজারকে রিডাইরেক্ট করে দিন
-                // কারণ SSLCommerz এর এই পেজটি বেশিক্ষণ আটকে থাকলে ইউজার বিরক্ত হবে
-                return res.redirect(`http://localhost:3000/payment_success`);
+
+                return res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment_success`);
 
             } catch (error) {
                 console.error("Database update error:", error);
-                // এরর হলেও হোমপেজে বা কোনো ইরর পেজে পাঠিয়ে দিন
-                res.redirect(`http://localhost:3000/payment-fail`);
+
+                res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment-fail`);
             }
         });
 
 
         app.post("/payment/fail/:tranId", async (req, res) => {
-            res.redirect(`http://localhost:3000/payment-fail`);
+            res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment-fail`);
         });
 
 
