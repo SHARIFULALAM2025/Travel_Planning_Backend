@@ -1,13 +1,18 @@
 const express = require('express')
+const SSLCommerzPayment = require('sslcommerz-lts');
+const { v4: uuidv4 } = require('uuid');
 const app = express()
-require('dotenv').config()
-const port = process.env.PORT || 5000
 const cors = require('cors');
-
-
 app.use(cors())
 app.use(express.json())
+require('dotenv').config()
+const port = process.env.PORT || 5000
 
+//
+const store_id = process.env.STORE_ID;
+const store_passwd = process.env.STORE_PASSWORD;
+const is_live = false;
+//
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
@@ -15,7 +20,7 @@ app.get('/', (req, res) => {
 //connect mongodb connection
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = `mongodb+srv://TravelPlanning:MVHJOHnrJSGPwv0h@cluster0.r1svgo6.mongodb.net/?appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.r1svgo6.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -36,6 +41,7 @@ async function run() {
         const reviewInfo = database.collection("review");
         const allCardData = database.collection("card");
         const AllWishlist = database.collection("wishlist");
+        const orderCollection = database.collection("order")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -109,7 +115,7 @@ async function run() {
             }
         });
         //update password
-        app.post("/update-password", async(req, res) => {
+        app.post("/update-password", async (req, res) => {
             const { token, passwordHashed } = req.body;
             try {
                 const user = await AllUser.findOne({
@@ -135,7 +141,7 @@ async function run() {
             }
         })
         //message save
-        app.post("/message",async (req, res) => {
+        app.post("/message", async (req, res) => {
             try {
                 const messageData = req.body;
                 console.log(messageData);
@@ -154,12 +160,12 @@ async function run() {
             res.send(result)
 
         })
-        app.get("/productAll", async(req, res) => {
+        app.get("/productAll", async (req, res) => {
             const allProduct = await ProductInfo.find().toArray();
             res.send(allProduct)
         })
         //
-        app.post("/blog-post", async(req, res) => {
+        app.post("/blog-post", async (req, res) => {
             const blogData = req.body;
             const result = await blogPost.insertOne(blogData);
             res.send(result)
@@ -187,7 +193,7 @@ async function run() {
             }
         });
         // cart
-        app.post("/cart-data", async(req, res) => {
+        app.post("/cart-data", async (req, res) => {
             const allCardInfo = req.body;
             const result = await allCardData.insertOne(allCardInfo);
             res.send(result)
@@ -198,9 +204,9 @@ async function run() {
             const allCard = await allCardData.find({ email: email }).toArray();
             res.send(allCard)
         });
-        app.delete("/removeCard/:id", async(req, res) => {
+        app.delete("/removeCard/:id", async (req, res) => {
             const id = req.params.id;
-            const query={_id:new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await allCardData.deleteOne(query);
             res.send(result)
 
@@ -215,12 +221,97 @@ async function run() {
             const allCard = await AllWishlist.find({ email: email }).toArray();
             res.send(allCard)
         });
-        app.delete("/deleteWishlist/:id",async (req, res) => {
+        app.delete("/deleteWishlist/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await AllWishlist.deleteOne(query);
             res.send(result)
         })
+        //payment
+        // payment init route
+        app.post('/init', async (req, res) => {
+            const transactionId = uuidv4();
+            const productInfo = req.body;
+            const { productName, price, customerName, email, address, phone } = req.body;
+
+
+            if (!price || price < 10) {
+                return res.status(400).send({ message: "Price must be at least 10 BDT" });
+            }
+
+            const data = {
+                total_amount: price,
+                currency: 'BDT',
+                tran_id: transactionId,
+                success_url: `http://localhost:5000/payment/success/${transactionId}`,
+                fail_url: `http://localhost:5000/payment/fail/${transactionId}`,
+                cancel_url: 'http://localhost:5000/payment/cancel',
+                ipn_url: 'http://localhost:5000/ipn',
+                shipping_method: 'Courier',
+                product_name: productName || 'Travel Package',
+                product_category: 'Service',
+                product_profile: 'general',
+                cus_name: customerName || 'Unknown',
+                cus_email: email || 'test@test.com',
+                cus_add1: address || 'Dhaka',
+                cus_phone: phone || '01700000000',
+                cus_city: 'Dhaka',
+                cus_state: 'Dhaka',
+                cus_postcode: '1000',
+                cus_country: 'Bangladesh',
+                ship_name: 'Customer Name',
+                ship_add1: 'Dhaka',
+                ship_city: 'Dhaka',
+                ship_state: 'Dhaka',
+                ship_postcode: '1000',
+                ship_country: 'Bangladesh',
+            };
+
+            try {
+                const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+                sslcz.init(data).then(apiResponse => {
+                    if (apiResponse?.GatewayPageURL) {
+                        res.send({ url: apiResponse.GatewayPageURL });
+                        const order = { productInfo, paidStatus: false, transactionId: transactionId }
+                        const result = orderCollection.insertOne(order)
+                    } else {
+
+                        console.error("SSLCommerz API Error:", apiResponse);
+                        res.status(400).send({ message: "SSLCommerz init failed", error: apiResponse });
+                    }
+                });
+            } catch (error) {
+                res.status(500).send({ message: "Internal server error", error: error.message });
+            }
+        });
+
+        app.post("/payment/success/:tranId", async (req, res) => {
+            const { tranId } = req.params;
+            console.log("Payment successful for Transaction ID:", tranId);
+
+            try {
+                // ১. ডাটাবেস আপডেট করুন
+                const result = await orderCollection.updateOne(
+                    { transactionId: tranId },
+                    { $set: { paidStatus: true } }
+                );
+
+                // ২. আপডেট হোক বা না হোক, ইউজারকে রিডাইরেক্ট করে দিন
+                // কারণ SSLCommerz এর এই পেজটি বেশিক্ষণ আটকে থাকলে ইউজার বিরক্ত হবে
+                return res.redirect(`http://localhost:3000/payment_success`);
+
+            } catch (error) {
+                console.error("Database update error:", error);
+                // এরর হলেও হোমপেজে বা কোনো ইরর পেজে পাঠিয়ে দিন
+                res.redirect(`http://localhost:3000/payment-fail`);
+            }
+        });
+
+
+        app.post("/payment/fail/:tranId", async (req, res) => {
+            res.redirect(`http://localhost:3000/payment-fail`);
+        });
+
 
 
         await client.db("admin").command({ ping: 1 });
