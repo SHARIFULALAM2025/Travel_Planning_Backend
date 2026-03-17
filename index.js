@@ -235,82 +235,145 @@ async function run() {
         })
         //payment
         // payment init route
+        // app.post('/init', async (req, res) => {
+        //     const transactionId = uuidv4();
+        //     const productInfo = req.body;
+        //     const { productName, price, customerName, email, address, phone } = req.body;
+
+
+        //     if (!price || price < 10) {
+        //         return res.status(400).send({ message: "Price must be at least 10 BDT" });
+        //     }
+
+        //     const data = {
+        //         total_amount: price,
+        //         currency: 'BDT',
+        //         tran_id: transactionId,
+        //         success_url: `${process.env.SERVER_Base_Url}/payment/success/${transactionId}`,
+        //         fail_url: `${process.env.SERVER_Base_Url}/payment/fail/${transactionId}`,
+        //         cancel_url: `${process.env.SERVER_Base_Url}/payment/cancel`,
+        //         ipn_url: `${process.env.SERVER_Base_Url}/ipn`,
+        //         shipping_method: 'Courier',
+        //         product_name: productName || 'Travel Package',
+        //         product_category: 'Service',
+        //         product_profile: 'general',
+        //         cus_name: customerName || 'Unknown',
+        //         cus_email: email || 'test@test.com',
+        //         cus_add1: address || 'Dhaka',
+        //         cus_phone: phone || '01700000000',
+        //         cus_city: 'Dhaka',
+        //         cus_state: 'Dhaka',
+        //         cus_postcode: '1000',
+        //         cus_country: 'Bangladesh',
+        //         ship_name: 'Customer Name',
+        //         ship_add1: 'Dhaka',
+        //         ship_city: 'Dhaka',
+        //         ship_state: 'Dhaka',
+        //         ship_postcode: '1000',
+        //         ship_country: 'Bangladesh',
+        //     };
+
+        //     try {
+        //         const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+        //         sslcz.init(data).then(apiResponse => {
+        //             if (apiResponse?.GatewayPageURL) {
+        //                 res.send({ url: apiResponse.GatewayPageURL });
+        //                 const order = { productInfo, paidStatus: "Unpaid", transactionId: transactionId }
+        //                 const result = orderCollection.insertOne(order)
+        //             } else {
+
+        //                 console.error("SSLCommerz API Error:", apiResponse);
+        //                 res.status(400).send({ message: "SSLCommerz init failed", error: apiResponse });
+        //             }
+        //         });
+        //     } catch (error) {
+        //         res.status(500).send({ message: "Internal server error", error: error.message });
+        //     }
+        // });
         app.post('/init', async (req, res) => {
-            const transactionId = uuidv4();
-            const productInfo = req.body;
-            const { productName, price, customerName, email, address, phone } = req.body;
-
-
-            if (!price || price < 10) {
-                return res.status(400).send({ message: "Price must be at least 10 BDT" });
-            }
-
-            const data = {
-                total_amount: price,
-                currency: 'BDT',
-                tran_id: transactionId,
-                success_url: `${process.env.SERVER_Base_Url}/payment/success/${transactionId}`,
-                fail_url: `${process.env.SERVER_Base_Url}/payment/fail/${transactionId}`,
-                cancel_url: `${process.env.SERVER_Base_Url}/payment/cancel`,
-                ipn_url: `${process.env.SERVER_Base_Url}/ipn`,
-                shipping_method: 'Courier',
-                product_name: productName || 'Travel Package',
-                product_category: 'Service',
-                product_profile: 'general',
-                cus_name: customerName || 'Unknown',
-                cus_email: email || 'test@test.com',
-                cus_add1: address || 'Dhaka',
-                cus_phone: phone || '01700000000',
-                cus_city: 'Dhaka',
-                cus_state: 'Dhaka',
-                cus_postcode: '1000',
-                cus_country: 'Bangladesh',
-                ship_name: 'Customer Name',
-                ship_add1: 'Dhaka',
-                ship_city: 'Dhaka',
-                ship_state: 'Dhaka',
-                ship_postcode: '1000',
-                ship_country: 'Bangladesh',
-            };
-
             try {
-                const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-                sslcz.init(data).then(apiResponse => {
-                    if (apiResponse?.GatewayPageURL) {
-                        res.send({ url: apiResponse.GatewayPageURL });
-                        const order = { productInfo, paidStatus: false, transactionId: transactionId }
-                        const result = orderCollection.insertOne(order)
-                    } else {
+                const transactionId = uuidv4();
+                const { productName, price, customerName, email, address, phone } = req.body;
 
-                        console.error("SSLCommerz API Error:", apiResponse);
-                        res.status(400).send({ message: "SSLCommerz init failed", error: apiResponse });
-                    }
-                });
+                if (!price || price < 10) {
+                    return res.status(400).send({ message: "Price must be at least 10 BDT" });
+                }
+
+
+                const data = {
+                    total_amount: price,
+                    currency: 'BDT',
+                    tran_id: transactionId,
+                    success_url: `${process.env.SERVER_Base_Url}/payment/success/${transactionId}`,
+                    fail_url: `${process.env.SERVER_Base_Url}/payment/fail/${transactionId}`,
+                    cancel_url: `${process.env.SERVER_Base_Url}/payment/cancel`,
+                    ipn_url: `${process.env.SERVER_Base_Url}/ipn`,
+                    shipping_method: 'Courier',
+                    product_name: productName || 'Travel Package',
+                    product_category: 'Service',
+                    product_profile: 'general',
+                    cus_name: customerName || 'Unknown',
+                    cus_email: email || 'test@test.com',
+                    cus_add1: address || 'Dhaka',
+                    cus_phone: phone || '01700000000',
+                    cus_city: 'Dhaka',
+                    cus_state: 'Dhaka',
+                    cus_postcode: '1000',
+                    cus_country: 'Bangladesh',
+                    ship_name: customerName || 'Customer Name',
+                    ship_add1: address || 'Dhaka',
+                    ship_city: 'Dhaka',
+                    ship_state: 'Dhaka',
+                    ship_postcode: '1000',
+                    ship_country: 'Bangladesh',
+                };
+
+                // 3. Initialize Payment
+                const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+                const apiResponse = await sslcz.init(data);
+
+                if (apiResponse?.GatewayPageURL) {
+
+                    const order = {
+                        productInfo: req.body,
+                        paidStatus:"unpaid",
+
+                        transactionId: transactionId,
+                        createdAt: new Date()
+                    };
+
+                    await orderCollection.insertOne(order);
+
+                    
+                    res.send({ url: apiResponse.GatewayPageURL });
+                } else {
+                    console.error("SSLCommerz API Error:", apiResponse);
+                    res.status(400).send({ message: "SSLCommerz init failed", error: apiResponse });
+                }
+
             } catch (error) {
+                console.error("Server Error:", error);
                 res.status(500).send({ message: "Internal server error", error: error.message });
             }
         });
-
         app.post("/payment/success/:tranId", async (req, res) => {
             const { tranId } = req.params;
-            console.log("Payment successful for Transaction ID:", tranId);
-
             try {
-                // ১. ডাটাবেস আপডেট করুন
+
                 const result = await orderCollection.updateOne(
                     { transactionId: tranId },
-                    { $set: { paidStatus: true } }
+                    { $set: {paidStatus: "paid" } }
                 );
 
 
                 return res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment_success`);
 
-            } catch (error) {
-                console.error("Database update error:", error);
+             } catch (error) {
+                 console.error("Database update error:", error);
 
-                res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment-fail`);
+              res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment-fail`);
             }
-        });
+         });
 
 
         app.post("/payment/fail/:tranId", async (req, res) => {
