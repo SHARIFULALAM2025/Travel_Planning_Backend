@@ -60,9 +60,14 @@ async function run() {
                         user: existUser,
                     });
                 }
+                const finalUserData = {
+                    ...userData,
+                    role: "user",
+                    createAt: new Date()
+                }
 
 
-                const result = await AllUser.insertOne(userData);
+                const result = await AllUser.insertOne(finalUserData);
 
                 res.status(201).json({
                     message: "User created successfully",
@@ -74,6 +79,11 @@ async function run() {
                 res.status(500).json({ error: "Failed to create user" });
             }
         });
+        app.get("/users/role/:email", async (req, res) => {
+            const email = req.params.email;
+            const result = await AllUser.findOne({ email })
+            res.send({ role: result?.role })
+        })
 
         app.post("/login-user", async (req, res) => {
             const { email } = req.body;
