@@ -341,7 +341,11 @@ async function run() {
                 res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment-fail`);
             }
         });
-
+        app.get("/my-order/:email", async (req, res) => {
+            const email = req.params.email;
+            const result = await orderCollection.find({"customerInfo.email":email}).toArray();
+            res.send(result)
+})
 
         app.post("/payment/fail/:tranId", async (req, res) => {
             res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment-fail`);
