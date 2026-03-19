@@ -248,7 +248,7 @@ async function run() {
         app.post('/init', async (req, res) => {
             try {
                 const transactionId = uuidv4();
-                const { items, total_amount, customerName, email, address, phone } = req.body;
+                const { items, total_amount, customerName, email, address, phone,date } = req.body;
 
 
                 console.log("Request Body:", req.body);
@@ -306,7 +306,8 @@ async function run() {
                         customerInfo: { customerName, email, address, phone },
                         paidStatus: "unpaid",
                         transactionId: transactionId,
-                        createdAt: new Date()
+                        date:date
+
                     };
 
                     await orderCollection.insertOne(order);
