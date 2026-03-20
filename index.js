@@ -48,7 +48,8 @@ async function run() {
         const reviewInfo = database.collection("review");
         const allCardData = database.collection("card");
         const AllWishlist = database.collection("wishlist");
-        const orderCollection = database.collection("order")
+        const orderCollection = database.collection("order");
+        const hotelData=database.collection("hotel")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -84,7 +85,7 @@ async function run() {
             const result = await AllUser.findOne({ email })
             res.send({ role: result?.role })
         })
-        app.get("/total-User", async(req, res) => {
+        app.get("/total-User", async (req, res) => {
             const result = await AllUser.find().toArray();
             res.send(result);
         })
@@ -252,7 +253,7 @@ async function run() {
         app.post('/init', async (req, res) => {
             try {
                 const transactionId = uuidv4();
-                const { items, total_amount, customerName, email, address, phone,date } = req.body;
+                const { items, total_amount, customerName, email, address, phone, date } = req.body;
 
 
                 console.log("Request Body:", req.body);
@@ -310,7 +311,7 @@ async function run() {
                         customerInfo: { customerName, email, address, phone },
                         paidStatus: "unpaid",
                         transactionId: transactionId,
-                        date:date
+                        date: date
 
                     };
 
@@ -348,13 +349,22 @@ async function run() {
         });
         app.get("/my-order/:email", async (req, res) => {
             const email = req.params.email;
-            const result = await orderCollection.find({"customerInfo.email":email}).toArray();
+            const result = await orderCollection.find({ "customerInfo.email": email }).toArray();
             res.send(result)
-})
+        })
 
         app.post("/payment/fail/:tranId", async (req, res) => {
             res.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/payment-fail`);
         });
+        app.post("/hotel", async (req, res) => {
+            const hotelInfo = req.body;
+            const result = await hotelData.insertMany(hotelInfo);
+            res.send(result)
+        });
+        app.get("/all-hotel",async(req,res)=>{
+            const result = await hotelData.find().toArray();
+            res.send(result)
+        })
 
 
 
