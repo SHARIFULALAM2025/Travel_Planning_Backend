@@ -26,6 +26,7 @@ app.get('/', (req, res) => {
 //connect mongodb connection
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const moment = require('moment/moment');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.r1svgo6.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -63,9 +64,8 @@ async function run() {
                 const finalUserData = {
                     ...userData,
                     role: "user",
-                    createAt: new Date()
+                    createAt: moment().format('MMMM Do YYYY, h:mm:ss a')
                 }
-
 
                 const result = await AllUser.insertOne(finalUserData);
 
@@ -83,6 +83,10 @@ async function run() {
             const email = req.params.email;
             const result = await AllUser.findOne({ email })
             res.send({ role: result?.role })
+        })
+        app.get("/total-User", async(req, res) => {
+            const result = await AllUser.find().toArray();
+            res.send(result);
         })
 
         app.post("/login-user", async (req, res) => {
@@ -165,7 +169,7 @@ async function run() {
                 const result = await AllMessage.insertOne(messageData)
                 res.send(result)
             } catch (error) {
-                console.error("ডাটাবেস সেভ করতে সমস্যা:", error);
+                console.error("save problem in database", error);
 
             }
         })
