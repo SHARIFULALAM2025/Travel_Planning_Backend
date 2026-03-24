@@ -52,6 +52,7 @@ async function run() {
         const orderCollection = database.collection("order");
         const hotelData = database.collection("hotel");
         const destinationData = database.collection("destination")
+        const PaymentImage=database.collection("img")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -383,33 +384,15 @@ async function run() {
             res.send(result)
         })
 
-        // app.get('/single-tour-details/:id/:tourId', async (req, res) => {
-        //     try {
-        //         const { id, tourId } = req.params;
-
-
-        //         const destination = await DestinationCollection.findOne({ _id: new ObjectId(id) });
-
-        //         if (!destination) {
-        //             return res.status(404).send({ message: "Destination not found" });
-        //         }
-
-
-
-        //         const specificTour = destination.multipleTour.find(
-        //             (tour) => tour.id === Number(tourId)
-        //         );
-
-        //         if (!specificTour) {
-        //             return res.status(404).send({ message: "Tour not found" });
-        //         }
-
-        //         res.send(specificTour);
-        //     } catch (error) {
-        //         res.status(500).send({ message: "Server error" });
-        //     }
-        // });
-        // আপনার ব্যাকএন্ডের সেই রাউটটি এভাবে আপডেট করুন:
+        app.post("/payment-img", async(req, res) => {
+            const paymentImage = req.body;
+            const result = await PaymentImage.insertOne(paymentImage);
+            res.send(result)
+        })
+        app.get("/all-pay-img", async(req, res) => {
+            const result = await PaymentImage.find().toArray();
+            res.send(result)
+        })
         app.get('/single-tour-details/:id/:tourId', async (req, res) => {
             try {
                 const { id, tourId } = req.params;
