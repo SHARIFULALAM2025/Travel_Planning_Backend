@@ -10,7 +10,8 @@ app.use(cors({
     ],
     credentials: true
 }));
-app.use(express.json())
+app.use(express.json({ limit: '20mb' }));
+//app.use(express.json())
 require('dotenv').config()
 const port = process.env.PORT || 5000
 
@@ -49,7 +50,8 @@ async function run() {
         const allCardData = database.collection("card");
         const AllWishlist = database.collection("wishlist");
         const orderCollection = database.collection("order");
-        const hotelData=database.collection("hotel")
+        const hotelData = database.collection("hotel");
+        const destinationData = database.collection("destination")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -361,11 +363,96 @@ async function run() {
             const result = await hotelData.insertMany(hotelInfo);
             res.send(result)
         });
-        app.get("/all-hotel",async(req,res)=>{
+        app.get("/all-hotel", async (req, res) => {
             const result = await hotelData.find().toArray();
             res.send(result)
         })
+        app.post("/destination", async (req, res) => {
+            const destinationInfo = req.body;
+            const result = await destinationData.insertMany(destinationInfo);
+            res.send(result)
+        });
+        app.get("/all-destination", async (req, res) => {
+            const result = await destinationData.find().toArray();
+            res.send(result)
+        })
+        app.get("/single-destination/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await destinationData.findOne(query);
+            res.send(result)
+        })
 
+        // app.get('/single-tour-details/:id/:tourId', async (req, res) => {
+        //     try {
+        //         const { id, tourId } = req.params;
+
+
+        //         const destination = await DestinationCollection.findOne({ _id: new ObjectId(id) });
+
+        //         if (!destination) {
+        //             return res.status(404).send({ message: "Destination not found" });
+        //         }
+
+
+
+        //         const specificTour = destination.multipleTour.find(
+        //             (tour) => tour.id === Number(tourId)
+        //         );
+
+        //         if (!specificTour) {
+        //             return res.status(404).send({ message: "Tour not found" });
+        //         }
+
+        //         res.send(specificTour);
+        //     } catch (error) {
+        //         res.status(500).send({ message: "Server error" });
+        //     }
+        // });
+        // আপনার ব্যাকএন্ডের সেই রাউটটি এভাবে আপডেট করুন:
+        app.get('/single-tour-details/:id/:tourId', async (req, res) => {
+            try {
+                const { id, tourId } = req.params;
+
+
+                if (!id || id === 'undefined' || id.length !== 24) {
+                    return res.status(400).send({ message: "Invalid MongoDB ID format" });
+                }
+
+
+                const query = { _id: new ObjectId(id) };
+                const destination = await destinationData.findOne(query);
+
+                if (!destination) {
+                    return res.status(404).send({ message: "Destination not found in database" });
+                }
+
+
+                const tours = destination.multipleTour || destination.multipleTour;
+
+                if (!tours) {
+                    return res.status(404).send({ message: "Tour array not found in this destination" });
+                }
+
+                const specificTour = tours.find(
+                    (tour) => Number(tour.id) === Number(tourId)
+                );
+
+                if (!specificTour) {
+                    return res.status(404).send({ message: "Specific Tour ID not found" });
+                }
+
+                // ৪. সাকসেস! ডাটা পাঠিয়ে দিন
+                res.send(specificTour);
+
+            } catch (error) {
+                console.error("CRITICAL BACKEND ERROR:", error);
+                res.status(500).send({
+                    message: "Internal Server Error",
+                    error: error.message
+                });
+            }
+        });
 
 
         await client.db("admin").command({ ping: 1 });
