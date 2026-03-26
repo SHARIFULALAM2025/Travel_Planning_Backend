@@ -10,7 +10,7 @@ app.use(cors({
     ],
     credentials: true
 }));
-app.use(express.json({ limit: '20mb' }));
+app.use(express.json({ limit: '50mb' }));
 //app.use(express.json())
 require('dotenv').config()
 const port = process.env.PORT || 5000
@@ -52,7 +52,9 @@ async function run() {
         const orderCollection = database.collection("order");
         const hotelData = database.collection("hotel");
         const destinationData = database.collection("destination")
-        const PaymentImage=database.collection("img")
+        const PaymentImage = database.collection("img")
+        const PopularDestination = database.collection("popular");
+        const RoomData=database.collection("room")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -425,7 +427,6 @@ async function run() {
                     return res.status(404).send({ message: "Specific Tour ID not found" });
                 }
 
-                // ৪. সাকসেস! ডাটা পাঠিয়ে দিন
                 res.send(specificTour);
 
             } catch (error) {
@@ -436,6 +437,25 @@ async function run() {
                 });
             }
         });
+        app.post("/popular-tour", async (req, res) => {
+            const destination = req.body;
+            const result = await PopularDestination.insertMany(destination);
+            res.send(result);
+        });
+        app.get("/all-popular", async(req, res) => {
+            const popular = await PopularDestination.find().toArray();
+            res.send(popular)
+        })
+        app.post("/new-hotel",async (req, res) => {
+            const allRoom = req.body;
+            const result = await RoomData.insertMany(allRoom);
+            res.send(result)
+        })
+        app.get("/all-new-hotel",async (req, res) => {
+            const result = await RoomData.find().toArray();
+            res.send(result)
+        })
+
 
 
         await client.db("admin").command({ ping: 1 });
