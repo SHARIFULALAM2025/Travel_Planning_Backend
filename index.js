@@ -54,7 +54,8 @@ async function run() {
         const destinationData = database.collection("destination")
         const PaymentImage = database.collection("img")
         const PopularDestination = database.collection("popular");
-        const RoomData=database.collection("room")
+        const RoomData = database.collection("room")
+        const AllComment=database.collection("comment")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -453,6 +454,15 @@ async function run() {
         })
         app.get("/all-new-hotel",async (req, res) => {
             const result = await RoomData.find().toArray();
+            res.send(result)
+        })
+        app.post("/comment", async (req, res) => {
+            const allComment = req.body;
+            const result = await AllComment.insertMany(allComment);
+            res.send(result)
+        })
+        app.get("/all-comments", async (req, res) => {
+            const result = await AllComment.find().toArray();
             res.send(result)
         })
 
