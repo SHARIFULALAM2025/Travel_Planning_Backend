@@ -56,6 +56,7 @@ async function run() {
         const PopularDestination = database.collection("popular");
         const RoomData = database.collection("room")
         const AllComment=database.collection("comment")
+        const AllExplore =database.collection("explore")
         app.post("/All_users", async (req, res) => {
             try {
                 const userData = req.body;
@@ -465,7 +466,15 @@ async function run() {
             const result = await AllComment.find().toArray();
             res.send(result)
         })
-
+        app.post("/Explore", async (req, res) => {
+            const allExplore = req.body;
+            const result = await AllExplore.insertMany(allExplore);
+            res.send(result)
+        })
+        app.get("/categoryExplore", async (req, res) => {
+            const result = await AllExplore.find().toArray();
+            res.send(result)
+        })
 
 
         await client.db("admin").command({ ping: 1 });
