@@ -92,6 +92,11 @@ async function run() {
             const result = await AllUser.findOne({ email })
             res.send({ role: result?.role })
         })
+        app.get("/users/profile/:email", async (req, res) => {
+            const email = req.params.email;
+            const result = await AllUser.findOne({ email })
+            res.send(result)
+        })
         app.get("/total-User", async (req, res) => {
             const result = await AllUser.find().toArray();
             res.send(result);
